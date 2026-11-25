@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Close-out check for RideOps L1</title>
+<style>
+@font-face{font-family:'Public Sans';font-weight:400;font-style:normal;font-display:swap;src:url(https://cdn.jsdelivr.net/npm/@fontsource/public-sans@5.3.0/files/public-sans-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Public Sans';font-weight:600;font-style:normal;font-display:swap;src:url(https://cdn.jsdelivr.net/npm/@fontsource/public-sans@5.3.0/files/public-sans-latin-600-normal.woff2) format('woff2')}
+@font-face{font-family:'Public Sans';font-weight:700;font-style:normal;font-display:swap;src:url(https://cdn.jsdelivr.net/npm/@fontsource/public-sans@5.3.0/files/public-sans-latin-700-normal.woff2) format('woff2')}
+
+
+:root{
+  --bg:#EDF0EE; --panel:#FFFFFF; --ink:#17252B; --ink2:#41525A; --muted:#6B7A80; --line:#D6DDDA; --soft:#F5F7F6;
+  --rail:#17252B; --railtext:#C9D3D1;
+  --ok:#1D6B57; --okbg:#E3F0EB; --mid:#9A5B0C; --midbg:#FBEFD9; --hi:#A6362E; --hibg:#F8E4E1;
+  --me:#2F5D8A; --team:#9AA6A9;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:'Public Sans',system-ui,sans-serif;font-size:14px;line-height:1.45;color:var(--ink);background:var(--bg)}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--me);outline-offset:2px}
+.app{display:grid;grid-template-columns:232px 1fr;min-height:100vh}
+
+/* rail */
+.rail{background:var(--rail);color:var(--railtext);padding:22px 16px;display:flex;flex-direction:column;gap:22px;position:sticky;top:0;height:100vh}
+.brand{color:#fff;font-weight:700;font-size:18px;letter-spacing:-.01em}
+.brand small{display:block;font-weight:400;font-size:12px;color:var(--railtext);margin-top:2px}
+.who label{display:block;font-size:12px;margin-bottom:6px}
+.who select{width:100%;background:#24363D;border:1px solid #33484F;color:#fff;border-radius:6px;padding:7px 8px}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{display:flex;gap:10px;justify-content:space-between;align-items:center;background:none;border:0;color:var(--railtext);text-align:left;padding:9px 10px;border-radius:6px}
+.nav button:hover{background:#21333A}
+.nav button[aria-current="page"]{background:#fff;color:var(--ink);font-weight:600}
+.nav .ct{font-size:12px;min-width:22px;text-align:center;border-radius:10px;padding:1px 6px;background:#2C4048;color:#fff}
+.nav button[aria-current="page"] .ct{background:var(--ink);color:#fff}
+.src{margin-top:auto;font-size:12px;color:#93A3A3;border-top:1px solid #2C4048;padding-top:14px}
+.src b{color:#fff;font-weight:600}
+.src label{display:inline-block;margin-top:8px;color:#fff;text-decoration:underline;cursor:pointer}
+.src input{display:none}
+
+/* main */
+main{padding:28px 36px 60px;max-width:1100px}
+.ph h1{font-size:24px;margin:0 0 4px;letter-spacing:-.015em}
+.ph p{margin:0;color:var(--ink2);max-width:66ch}
+.ph{margin-bottom:22px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px}
+.empty{padding:28px;color:var(--ink2)}
+
+/* ticket list */
+.list{overflow:hidden}
+.row{display:grid;grid-template-columns:92px 98px 1fr 150px 90px;gap:14px;align-items:center;padding:12px 16px;border-top:1px solid var(--line);background:none;border-left:0;border-right:0;border-bottom:0;width:100%;text-align:left}
+.row:first-child{border-top:0}
+button.row:hover{background:var(--soft)}
+.row.hd{font-size:12px;color:var(--muted);padding-top:9px;padding-bottom:9px;background:var(--soft)}
+.row .sym{font-weight:600}
+.row .sub{display:block;font-weight:400;color:var(--muted);font-size:12.5px}
+.tid{font-variant-numeric:tabular-nums;color:var(--ink2)}
+.age{color:var(--ink2);font-size:13px}
+.pill{display:inline-block;font-size:12px;font-weight:600;border-radius:4px;padding:2px 7px;white-space:nowrap}
+.pill.hi{background:var(--hibg);color:var(--hi)} .pill.mid{background:var(--midbg);color:var(--mid)} .pill.lo{background:var(--okbg);color:var(--ok)}
+.tag{font-size:12px;color:var(--hi);font-weight:600}
+.practice{margin-top:18px;display:flex;gap:10px;align-items:center;color:var(--ink2);font-size:13px}
+.practice input{border:1px solid var(--line);border-radius:6px;padding:6px 8px;width:130px;background:#fff}
+.practice button{border:1px solid var(--ink);background:#fff;border-radius:6px;padding:6px 12px}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(23,37,43,.28);display:none}
+.scrim.on{display:block}
+.drawer{position:fixed;top:0;right:0;height:100vh;width:min(560px,100vw);background:#fff;border-left:1px solid var(--line);overflow-y:auto;transform:translateX(100%);transition:transform .18s ease-out;display:flex;flex-direction:column}
+.drawer.on{transform:none}
+@media (prefers-reduced-motion:reduce){.drawer{transition:none}}
+.dh{padding:20px 24px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;z-index:1}
+.dh .x{float:right;border:0;background:none;font-size:22px;line-height:1;color:var(--muted);padding:2px 6px}
+.dh h2{margin:0 0 4px;font-size:18px;letter-spacing:-.01em;padding-right:30px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--ink2)}
+.meta b{color:var(--ink);font-weight:600}
+.db{padding:18px 24px 28px;display:flex;flex-direction:column;gap:22px}
+.risk{border-radius:8px;padding:14px 16px}
+.risk.hi{background:var(--hibg)} .risk.mid{background:var(--midbg)} .risk.lo{background:var(--okbg)}
+.risk h3{margin:0 0 6px;font-size:15px}
+.risk.hi h3{color:var(--hi)} .risk.mid h3{color:var(--mid)} .risk.lo h3{color:var(--ok)}
+.risk ul{margin:0;padding-left:18px;color:var(--ink)}
+.risk li{margin:2px 0}
+.step h4{margin:0 0 8px;font-size:14px;display:flex;gap:8px;align-items:baseline}
+.step h4 .n{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--ink);color:#fff;font-size:11px;flex:none}
+.step p.hint{margin:-4px 0 8px 28px;font-size:12.5px;color:var(--muted)}
+.checks{margin-left:28px;display:flex;flex-direction:column;gap:6px}
+.checks label{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line);border-radius:6px;cursor:pointer}
+.checks label:hover{background:var(--soft)}
+.checks input{margin-top:3px;accent-color:var(--ok)}
+.checks label.done{background:var(--okbg);border-color:#BFDCD1}
+.msg{margin-left:28px}
+.msg textarea{width:100%;min-height:150px;border:1px solid var(--line);border-radius:6px;padding:10px;font:inherit;font-size:13.5px;line-height:1.5;resize:vertical}
+.msg .copy{margin-top:6px;border:1px solid var(--line);background:#fff;border-radius:6px;padding:5px 10px;font-size:13px}
+.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:18px}
+.primary{background:var(--ok);color:#fff;border:0;border-radius:6px;padding:10px 16px;font-weight:600}
+.primary:disabled{background:#AEBDB8;cursor:not-allowed}
+.ghost{background:none;border:1px solid var(--line);border-radius:6px;padding:9px 14px}
+.why{font-size:12.5px;color:var(--muted)}
+.mine{font-size:13px;color:var(--ink2);margin-top:8px}
+
+/* watch */
+.wrow{grid-template-columns:92px 1fr 140px 130px 120px}
+.wrow .ok{color:var(--ok);font-weight:600;font-size:13px}
+.mini{border:1px solid var(--line);background:#fff;border-radius:6px;padding:5px 10px;font-size:12.5px}
+
+/* stats */
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.tile{padding:14px 16px}
+.tile .k{font-size:12.5px;color:var(--ink2)}
+.tile .v{font-size:26px;font-weight:700;letter-spacing:-.02em;margin-top:2px;font-variant-numeric:tabular-nums}
+.tile .c{font-size:12.5px;color:var(--muted)}
+.insight{padding:14px 18px;margin-bottom:16px;border-left:4px solid var(--me)}
+.insight b{font-weight:600}
+.charts{display:grid;grid-template-columns:1.15fr 1fr;gap:12px;margin-bottom:16px}
+.chart{padding:14px 16px 10px;position:relative}
+.chart h3{margin:0 0 2px;font-size:14px}
+.chart .s{margin:0 0 6px;font-size:12.5px;color:var(--muted)}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--ink2);margin-bottom:4px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+svg text{font-family:'Public Sans',system-ui,sans-serif}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:#fff;font-size:12px;padding:6px 8px;border-radius:4px;white-space:nowrap;display:none;z-index:2}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-weight:600;color:var(--muted);font-size:12px;padding:8px 14px;background:var(--soft);border-bottom:1px solid var(--line)}
+.tbl td{padding:8px 14px;border-bottom:1px solid var(--line)}
+.tbl tr:last-child td{border-bottom:0}
+.sect{font-size:15px;margin:22px 0 8px}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:6px;font-size:13.5px;display:none;z-index:5}
+
+@media (max-width:860px){
+  .app{grid-template-columns:1fr}
+  .rail{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center}
+  .src{margin-top:0;border:0;padding:0}
+  main{padding:20px 16px}
+  .row,.wrow{grid-template-columns:64px 1fr}
+  .row .c4,.row .c5,.row .tid,.row.hd,.wrow>span:nth-child(3){display:none}
+  .wrow{grid-template-columns:1fr auto}
+  .wrow .tid{display:none}
+  .tiles{grid-template-columns:1fr 1fr}
+  .charts{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="rail">
+    <div class="brand">Close-out<small>Check before you close a ticket</small></div>
+    <div class="who">
+      <label for="agent">Signed in as</label>
+      <select id="agent"></select>
+    </div>
+    <nav class="nav" aria-label="Pages">
+      <button data-page="ready" aria-current="page">Ready to close <span class="ct" id="ctReady">0</span></button>
+      <button data-page="watch">Follow-ups <span class="ct" id="ctWatch">0</span></button>
+      <button data-page="stats">My closes</button>
+    </nav>
+    <div class="src" id="src">Loading tickets…</div>
+  </aside>
+  <main id="main"></main>
+</div>
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Close-out sheet" aria-hidden="true"></aside>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ---------- playbook: what to verify before closing, per symptom ----------
+   Ordered most specific first. Each check is something the agent can actually do
+   before closing. "next" is the thing the client should watch for, used in the message. */
+const PLAYBOOK = [
+  {re:/duplicate entries/i, checks:[
+    "Open the roster for the next shift and confirm each affected employee appears once",
+    "Find where the duplicates came from (Excel upload, ad-hoc booking or sync) and note it on the ticket",
+    "Ask the client admin to confirm their headcount matches the roster"],
+    next:"the next roster that's generated"},
+  {re:/cutoff/i, checks:[
+    "Check the cutoff saved on the client account matches what they asked for",
+    "Confirm a roster generated after the change actually used the new cutoff",
+    "If the next roster hasn't run yet, schedule a follow-up for after it runs"],
+    next:"the first roster generated after the new cutoff"},
+  {re:/cancelled bookings/i, checks:[
+    "Open tomorrow's roster and confirm the cancelled employees are no longer on it",
+    "Check the cancellations are saved in the system, not just requested",
+    "Tell the client which bookings were removed"],
+    next:"tomorrow's roster"},
+  {re:/uploaded via excel/i, checks:[
+    "Open the upload log and list the rows that were rejected, with the reason",
+    "Confirm the missing employees are now on the roster after re-upload",
+    "Send the client the rejected-row reasons so the next upload is clean"],
+    next:"the next Excel upload"},
+  {re:/shift not showing/i, checks:[
+    "Open the roster for that shift and confirm the booked employees now appear",
+    "Check whether the shift timing exists on the client account",
+    "If the fix applies from the next run, schedule a follow-up for after that run"],
+    next:"the next roster for that shift"},
+  {re:/ad-hoc booking/i, checks:[
+    "Confirm the booking now shows in the employee app, not only on the admin side",
+    "Check the booking is on the right date and shift"],
+    next:"the employee's app before their trip"},
+  {re:/address|pickup point|pin location/i, checks:[
+    "Open the map and confirm the new address is pinned at the right spot",
+    "Confirm the next route plan uses the new pickup point",
+    "Ask the client to confirm with the employee after their next pickup"],
+    next:"the employee's next pickup"},
+  {re:/tracking link/i, checks:[
+    "Open the tracking link yourself from outside the client's network",
+    "Confirm it opens for the security team's login or device"],
+    next:"the next trip's tracking link"},
+  {re:/frozen|gps jumping|km away|\beta\b|route shown/i, checks:[
+    "Check the driver app's last location ping is recent, not stale",
+    "Confirm whether this was one driver's phone or a wider issue, and note the driver",
+    "Ask the client to check on the next live trip, not the one already finished"],
+    next:"the next live trip"},
+  {re:/log in|login|locked out|access|sso/i, checks:[
+    "Have the user log in while you are still on the ticket",
+    "Confirm they can reach the module they asked for"],
+    next:"their next login"},
+  {re:/report|export/i, checks:[
+    "Run the same report yourself with the client's filters and date range",
+    "Check the row count matches what the client expects",
+    "Send the file (or a screenshot of the working export) with the reply"],
+    next:"the next time they run this report"},
+  {re:/otp|boarded|boarding/i, checks:[
+    "Confirm the employee's phone number on file is correct",
+    "Ask the client to confirm boarding works on the next trip"],
+    next:"the next trip's boarding"},
+  {re:/dead-km|rate card|toll|invoice/i, checks:[
+    "Confirm the corrected invoice or credit note has actually been issued",
+    "Send the corrected line items with the reply, not only a summary"],
+    next:"the corrected invoice"},
+  {re:/late|did not turn up|no-show|delays/i, checks:[
+    "Record what the vendor was told and what action was taken",
+    "For repeated delays, check the next two days on that route before closing"],
+    next:"the next trips on that route"},
+  {re:/insurance|fitness|verification|certificate/i, checks:[
+    "Confirm the document status has changed in the system",
+    "Check the vehicle or driver is assigned (or unassigned) correctly"],
+    next:"the next assignment"},
+  {re:/how to|can we|request|need option/i, checks:[
+    "Send the steps or the answer in writing",
+    "Ask the client to reply once they've tried it"],
+    next:"when they try it"},
+];
+const GENERIC = {checks:["Confirm with the client that the issue is gone","Write on the ticket what was changed"], next:"the next time they use it"};
+const playFor = t => PLAYBOOK.find(p=>p.re.test(t.description)) || GENERIC;
+
+/* ---------- csv ---------- */
+function parseCSV(text){
+  const rows=[]; let row=[], f='', q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){ if(c=='"'){ if(text[i+1]=='"'){f+='"';i++} else q=false } else f+=c }
+    else if(c=='"') q=true;
+    else if(c==','){row.push(f);f=''}
+    else if(c=='\n'||c=='\r'){ if(c=='\r'&&text[i+1]=='\n')i++; row.push(f);f=''; if(row.length>1||row[0]!=='')rows.push(row); row=[] }
+    else f+=c;
+  }
+  if(f!==''||row.length){row.push(f);rows.push(row)}
+  const h=rows.shift().map(s=>s.trim());
+  return rows.map(r=>Object.fromEntries(h.map((k,i)=>[k,(r[i]??'').trim()])));
+}
+const dt = s => s ? new Date(s.replace(' ','T')) : null;
+const H = 36e5, DAY = 864e5;
+
+/* ---------- state ---------- */
+let T=[], NOW=null, AGENTS=[], SYM={}, BASE=0, page='ready', agent='Karan B', practice=null;
+const store = {
+  get(k,d){ try{ return JSON.parse(localStorage.getItem('closeout:'+k)) ?? d }catch(e){ return d } },
+  set(k,v){ try{ localStorage.setItem('closeout:'+k, JSON.stringify(v)) }catch(e){} }
+};
+let LOG = store.get('log', []);       // closes made in this tool
+let CHECKED = store.get('checked', {}); // follow-ups marked done
+
+function load(text){
+  T = parseCSV(text).filter(r=>r.ticket_id).map(r=>({
+    ...r,
+    created:dt(r.created_at), firstClosed:dt(r.first_closed_at), finalClosed:dt(r.final_closed_at),
+    reopens:+r.reopen_count||0, csat:r.csat_score===''?null:+r.csat_score,
+    esc:r.escalated_to_eng==='Yes',
+    sym:r.description.replace(/\d+/g,'N')
+  }));
+  NOW = new Date(Math.max(...T.map(t=>Math.max(t.created||0,t.finalClosed||0))));
+  AGENTS = [...new Set(T.map(t=>t.assigned_agent))].sort();
+  if(!AGENTS.includes(agent)) agent = AGENTS[0];
+  // reopen rate per symptom, pulled toward the overall rate so rare symptoms don't swing
+  const closed = T.filter(t=>t.firstClosed);
+  BASE = closed.filter(t=>t.reopens>0).length / closed.length;
+  const g={}; closed.forEach(t=>{ (g[t.sym] ||= {n:0,r:0}); g[t.sym].n++; if(t.reopens>0) g[t.sym].r++ });
+  SYM={}; for(const k in g){ SYM[k]={...g[k], rate:(g[k].r + BASE*10)/(g[k].n+10)} }
+  const sel=document.getElementById('agent');
+  sel.innerHTML = AGENTS.map(a=>`<option ${a===agent?'selected':''}>${esc(a)}</option>`).join('');
+  const first = new Date(Math.min(...T.map(t=>t.created)));
+  document.getElementById('src').innerHTML =
+    `Export: <b>${fmtD(first)} to ${fmtD(NOW)}</b><br>${T.length.toLocaleString()} tickets. "Now" is the end of the export.<br>
+     <label>Load a newer export<input type="file" accept=".csv" id="file"></label>`;
+  document.getElementById('file').onchange = e => { const f=e.target.files[0]; if(f) f.text().then(load) };
+  render();
+}
+
+/* ---------- helpers ---------- */
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pct = x => (x>0&&x<0.995 ? (x*100).toFixed(1) : (x*100).toFixed(0))+'%';
+const fmtD = d => d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+const fmtDT = d => fmtD(d)+', '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+function ago(d){ const h=(NOW-d)/H; return h<24 ? Math.max(1,Math.round(h))+' h' : Math.round(h/24)+' d' }
+const closedIds = () => new Set(LOG.map(l=>l.id));
+
+function risk(t){
+  const s = SYM[t.sym] || {n:0,r:0,rate:BASE};
+  const reasons=[];
+  let level = s.rate>=0.14 ? 'hi' : s.rate>=0.09 ? 'mid' : 'lo';
+  if(s.n>=5) reasons.push(`This symptom reopened ${s.r} of ${s.n} times across the team (${pct(s.r/s.n)}), against ${pct(BASE)} for all tickets.`);
+  else reasons.push(`Only ${s.n} past tickets with this symptom, so treat the history loosely.`);
+  if(t.reopens>0){ level='hi'; reasons.push(`This ticket has already been reopened ${t.reopens===1?'once':t.reopens+' times'}. The client has seen it come back before.`) }
+  if(['P1','P2'].includes(t.priority)) reasons.push(`${t.priority} ticket: if it comes back, it comes back urgent.`);
+  return {level, reasons, label:{hi:'High',mid:'Medium',lo:'Low'}[level]+' reopen risk'};
+}
+function myRecord(t){
+  const mine = T.filter(x=>x.assigned_agent===agent && x.firstClosed && x.category===t.category && x.ticket_id!==t.ticket_id);
+  const team = T.filter(x=>x.assigned_agent!==agent && x.firstClosed && x.category===t.category);
+  const r = a => a.filter(x=>x.reopens>0).length;
+  return {n:mine.length, r:r(mine), tn:team.length, tr:r(team)};
+}
+
+/* ---------- pages ---------- */
+function readyList(){
+  const done = closedIds();
+  return T.filter(t=>t.assigned_agent===agent && t.status==='Open - with L1' && !done.has(t.ticket_id))
+    .sort((a,b)=>(risk(b).level==='hi')-(risk(a).level==='hi') || a.created-b.created);
+}
+function watchList(){
+  const fromData = T.filter(t=>t.assigned_agent===agent && t.status==='Closed' && t.firstClosed && (NOW-t.firstClosed)<=3*DAY && risk(t).level!=='lo')
+    .map(t=>({t, due:new Date(t.firstClosed.getTime()+2*DAY), why:risk(t).label, src:'data'}));
+  const fromTool = LOG.filter(l=>l.agent===agent && l.follow).map(l=>({t:T.find(x=>x.ticket_id===l.id), due:new Date(l.due), why:l.how==='none'?'Closed without confirmation':'High reopen risk', src:'tool'})).filter(x=>x.t);
+  const seen=new Set(); return [...fromTool,...fromData].filter(x=>!seen.has(x.t.ticket_id)&&seen.add(x.t.ticket_id)).sort((a,b)=>a.due-b.due);
+}
+function counts(){
+  document.getElementById('ctReady').textContent = readyList().length;
+  document.getElementById('ctWatch').textContent = watchList().filter(w=>!CHECKED[w.t.ticket_id]).length;
+}
+
+function render(){
+  document.querySelectorAll('.nav button').forEach(b=>b.setAttribute('aria-current', b.dataset.page===page?'page':'false'));
+  counts();
+  const m=document.getElementById('main');
+  if(page==='ready') m.innerHTML = pageReady();
+  if(page==='watch') m.innerHTML = pageWatch();
+  if(page==='stats') { m.innerHTML = pageStats(); drawCharts() }
+  bindRows();
+}
+
+function pageReady(){
+  const L = readyList();
+  const rows = L.map(t=>{ const r=risk(t); return `
+    <button class="row" data-open="${t.ticket_id}">
+      <span><span class="pill ${r.level}">${r.label.split(' ')[0]}</span></span>
+      <span class="tid">${t.ticket_id}</span>
+      <span class="sym">${esc(t.description)}<span class="sub">${esc(t.client_name)}, ${esc(t.client_tier)}, ${esc(t.category)}</span></span>
+      <span class="c4">${t.reopens?`<span class="tag">Reopened ${t.reopens}×</span>`:'<span class="age">Not reopened</span>'}</span>
+      <span class="c5 age">open ${ago(t.created)}</span>
+    </button>`}).join('');
+  return `<div class="ph"><h1>Ready to close</h1>
+    <p>Your tickets that are with you, not engineering. Open one when you think it's fixed. The sheet shows how often this kind of ticket comes back and what to check first.</p></div>
+    <div class="card list">${L.length?`<div class="row hd"><span>Risk</span><span>Ticket</span><span>Problem</span><span class="c4">History</span><span class="c5">Age</span></div>${rows}`:'<div class="empty">Nothing waiting with you right now. Use a past ticket below to see how the check works.</div>'}</div>
+    <div class="practice"><span>Try the check on any past ticket of yours:</span>
+      <input id="pid" placeholder="e.g. ${esc(T.find(t=>t.assigned_agent===agent&&t.reopens>0)?.ticket_id||'SUP-10001')}" aria-label="Ticket ID">
+      <button id="pgo">Open</button></div>`;
+}
+
+function pageWatch(){
+  const W = watchList();
+  const rows = W.map(w=>{ const t=w.t, done=CHECKED[t.ticket_id]; return `
+    <div class="row wrow">
+      <span class="tid">${t.ticket_id}</span>
+      <span class="sym">${esc(t.description)}<span class="sub">${esc(t.client_name)}, closed ${fmtDT(t.firstClosed||NOW)}</span></span>
+      <span class="age">${esc(w.why)}</span>
+      <span class="age">${w.due<NOW?'<b style="color:var(--hi)">Due '+fmtD(w.due)+'</b>':'Check by '+fmtD(w.due)}</span>
+      <span>${done?'<span class="ok">Checked</span>':`<button class="mini" data-check="${t.ticket_id}">Mark checked</button>`}</span>
+    </div>`}).join('');
+  return `<div class="ph"><h1>Follow-ups</h1>
+    <p>Medium- and high-risk tickets you closed in the last 3 days, plus anything you closed here without confirmation. A quick message to the client within 2 days catches the problem before they reopen it.</p></div>
+    <div class="card list">${W.length?`<div class="row wrow hd"><span>Ticket</span><span>Problem</span><span>Why it's here</span><span>When</span><span></span></div>${rows}`:'<div class="empty">No follow-ups due. Risky closes will show up here.</div>'}</div>`;
+}
+
+function pageStats(){
+  const mine = T.filter(t=>t.assigned_agent===agent && t.firstClosed), rest = T.filter(t=>t.assigned_agent!==agent && t.firstClosed);
+  const rr = a => a.length ? a.filter(t=>t.reopens>0).length/a.length : 0;
+  const myR = rr(mine), teamR = rr(rest);
+  const rated = a => a.filter(t=>t.csat!=null);
+  const avg = a => a.length ? (a.reduce((s,t)=>s+t.csat,0)/a.length) : null;
+  const mOnce = avg(rated(mine).filter(t=>!t.reopens)), mRe = avg(rated(mine).filter(t=>t.reopens));
+  // closing speed vs reopen: compare each close to the team's median time for that symptom
+  const med = {}; rest.forEach(t=>{ (med[t.sym] ||= []).push((t.firstClosed-t.created)/H) });
+  for(const k in med){ const a=med[k].sort((x,y)=>x-y); med[k]=a[Math.floor(a.length/2)] }
+  const fast = mine.filter(t=>med[t.sym] && (t.firstClosed-t.created)/H < 0.5*med[t.sym]), slow = mine.filter(t=>med[t.sym] && !fast.includes(t));
+  const wk = LOG.filter(l=>l.agent===agent && (Date.now()-l.at)<7*DAY);
+  const verified = wk.filter(l=>l.how!=='none').length;
+  const myReopened = mine.filter(t=>t.reopens>0).sort((a,b)=>b.created-a.created);
+
+  let insight;
+  if(fast.length>=10 && slow.length>=10){
+    const fr=rr(fast), sr=rr(slow);
+    insight = Math.abs(fr-sr)<0.06
+      ? `<b>Closing fast isn't what's causing your reopens.</b> Your quick closes (under half the team's usual time) came back ${pct(fr)} of the time and your slower ones ${pct(sr)}. What you confirm before closing matters more than how long you take.`
+      : fr>sr ? `<b>Your quick closes come back more often.</b> Closes under half the team's usual time reopened ${pct(fr)}, slower ones ${pct(sr)}. Slow down on the risky symptoms.`
+              : `<b>Your slower closes come back more often</b> (${pct(sr)} against ${pct(fr)} for quick ones). Long, messy tickets need the most careful close-out.`;
+  } else insight = `Not enough closes yet to compare quick and slow closes.`;
+
+  return `<div class="ph"><h1>My closes</h1>
+    <p>How often tickets you closed came back, compared with the rest of the team. Everything here comes from the export, apart from "verified this week", which counts closes made in this tool.</p></div>
+    <div class="tiles">
+      <div class="card tile"><div class="k">My reopen rate</div><div class="v">${pct(myR)}</div><div class="c">Rest of team ${pct(teamR)}</div></div>
+      <div class="card tile"><div class="k">My tickets that came back</div><div class="v">${mine.filter(t=>t.reopens>0).length}</div><div class="c">of ${mine.length} closed</div></div>
+      <div class="card tile"><div class="k">Client rating when it came back</div><div class="v">${mRe!=null?mRe.toFixed(1):'–'}</div><div class="c">${mOnce!=null?mOnce.toFixed(1)+' when closed once (out of 5)':'no ratings yet'}</div></div>
+      <div class="card tile"><div class="k">Verified closes this week</div><div class="v">${wk.length?verified+'/'+wk.length:'–'}</div><div class="c">${wk.length?'closed with a confirmation':'none made in this tool yet'}</div></div>
+    </div>
+    <div class="card insight">${insight}</div>
+    <div class="charts">
+      <div class="card chart" id="c1"><h3>Reopen rate by week</h3><p class="s">Share of tickets closed that week that later came back</p>
+        <div class="legend"><span><i style="background:var(--me)"></i>${esc(agent)}</span><span><i style="background:var(--team)"></i>Rest of team</span></div><div class="tip"></div></div>
+      <div class="card chart" id="c2"><h3>Reopen rate by problem type</h3><p class="s">Where your tickets come back, against the team</p>
+        <div class="legend"><span><i style="background:var(--me);border-radius:50%"></i>${esc(agent)}</span><span><i style="background:var(--team);border-radius:50%"></i>Rest of team</span></div><div class="tip"></div></div>
+    </div>
+    <h2 class="sect">Tickets of mine that came back (${myReopened.length})</h2>
+    <div class="card" style="overflow-x:auto"><table class="tbl"><thead><tr><th>Ticket</th><th>Created</th><th>Problem</th><th>Times reopened</th><th>Rating</th></tr></thead><tbody>
+      ${myReopened.map(t=>`<tr><td class="tid"><a href="#" data-open="${t.ticket_id}">${t.ticket_id}</a></td><td>${fmtD(t.created)}</td><td>${esc(t.description)}</td><td>${t.reopens}</td><td>${t.csat??'–'}</td></tr>`).join('') || '<tr><td colspan="5">None.</td></tr>'}
+    </tbody></table></div>`;
+}
+
+/* ---------- charts (plain SVG) ---------- */
+function weekKey(d){ const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x.getTime() }
+function drawCharts(){
+  const closed = T.filter(t=>t.firstClosed);
+  const wks = [...new Set(closed.map(t=>weekKey(t.firstClosed)))].sort((a,b)=>a-b);
+  const series = who => wks.map(w=>{ const a=closed.filter(t=>weekKey(t.firstClosed)===w && who(t)); return {w, n:a.length, r:a.length?a.filter(t=>t.reopens>0).length/a.length:null} });
+  const me = series(t=>t.assigned_agent===agent), team = series(t=>t.assigned_agent!==agent);
+  const W=520,Hh=210,p={l:36,r:14,t:10,b:26}, iw=W-p.l-p.r, ih=Hh-p.t-p.b;
+  const ymax = Math.max(0.2, ...me.concat(team).map(s=>s.r||0))*1.1;
+  const x = i => p.l + (wks.length<2?iw/2:i*iw/(wks.length-1)), y = v => p.t + ih - v/ymax*ih;
+  const ticks=[0,0.1,0.2,0.3,0.4,0.5].filter(v=>v<=ymax);
+  const path = s => s.map((d,i)=>d.r==null?'':(i&&s[i-1].r!=null?'L':'M')+x(i).toFixed(1)+','+y(d.r).toFixed(1)).join('');
+  let svg = `<svg viewBox="0 0 ${W} ${Hh}" width="100%" role="img" aria-label="Weekly reopen rate, ${esc(agent)} against rest of team">`;
+  ticks.forEach(v=>svg+=`<line x1="${p.l}" x2="${W-p.r}" y1="${y(v)}" y2="${y(v)}" stroke="#E4E9E7"/><text x="${p.l-6}" y="${y(v)+4}" font-size="10.5" fill="#6B7A80" text-anchor="end">${v*100}%</text>`);
+  wks.forEach((w,i)=>{ if(i%2===0) svg+=`<text x="${x(i)}" y="${Hh-8}" font-size="10.5" fill="#6B7A80" text-anchor="middle">${fmtD(new Date(w))}</text>` });
+  svg+=`<path d="${path(team)}" fill="none" stroke="var(--team)" stroke-width="2"/><path d="${path(me)}" fill="none" stroke="var(--me)" stroke-width="2"/>`;
+  me.forEach((d,i)=>{ if(d.r!=null) svg+=`<circle cx="${x(i)}" cy="${y(d.r)}" r="3.5" fill="var(--me)" stroke="#fff" stroke-width="2"/>` });
+  wks.forEach((w,i)=>svg+=`<rect x="${x(i)-iw/wks.length/2}" y="${p.t}" width="${iw/wks.length}" height="${ih}" fill="transparent" data-i="${i}"/>`);
+  svg+='</svg>';
+  const c1=document.getElementById('c1'); c1.insertAdjacentHTML('beforeend',svg);
+  const tip1=c1.querySelector('.tip');
+  c1.querySelectorAll('rect[data-i]').forEach(r=>{
+    r.onmousemove=e=>{ const i=+r.dataset.i, a=me[i], b=team[i];
+      tip1.innerHTML=`Week of ${fmtD(new Date(wks[i]))}<br>${esc(agent)}: ${a.r==null?'no closes':pct(a.r)+' of '+a.n}<br>Rest of team: ${b.r==null?'–':pct(b.r)+' of '+b.n}`;
+      const bb=c1.getBoundingClientRect(); tip1.style.display='block'; tip1.style.left=Math.min(e.clientX-bb.left+12,bb.width-170)+'px'; tip1.style.top=(e.clientY-bb.top-10)+'px' };
+    r.onmouseleave=()=>tip1.style.display='none';
+  });
+
+  // dot plot by category
+  const cats=[...new Set(closed.map(t=>t.category))];
+  const rate = (a)=>a.length?a.filter(t=>t.reopens>0).length/a.length:null;
+  const rows = cats.map(c=>{ const m=closed.filter(t=>t.category===c&&t.assigned_agent===agent), o=closed.filter(t=>t.category===c&&t.assigned_agent!==agent);
+    return {c, m:rate(m), mn:m.length, o:rate(o), on:o.length} }).sort((a,b)=>(b.m??-1)-(a.m??-1));
+  const W2=440, rh=24, p2={l:150,r:40,t:6,b:22}, H2=p2.t+rows.length*rh+p2.b;
+  const xmax=Math.max(0.2,...rows.map(r=>Math.max(r.m||0,r.o||0)))*1.08, X=v=>p2.l+v/xmax*(W2-p2.l-p2.r);
+  let s2=`<svg viewBox="0 0 ${W2} ${H2}" width="100%" role="img" aria-label="Reopen rate by problem type">`;
+  [0,0.2,0.4,0.6].filter(v=>v<=xmax).forEach(v=>s2+=`<line x1="${X(v)}" x2="${X(v)}" y1="${p2.t}" y2="${H2-p2.b}" stroke="#E4E9E7"/><text x="${X(v)}" y="${H2-6}" font-size="10.5" fill="#6B7A80" text-anchor="middle">${v*100}%</text>`);
+  rows.forEach((r,i)=>{ const cy=p2.t+i*rh+rh/2, short=r.c.replace(/ \/ .*/,'').replace('Employee address','Address');
+    s2+=`<text x="${p2.l-8}" y="${cy+4}" font-size="11.5" fill="#41525A" text-anchor="end">${esc(short)}</text>`;
+    if(r.m!=null&&r.o!=null) s2+=`<line x1="${X(r.o)}" x2="${X(r.m)}" y1="${cy}" y2="${cy}" stroke="#C9D2CF" stroke-width="2"/>`;
+    if(r.o!=null) s2+=`<circle cx="${X(r.o)}" cy="${cy}" r="5" fill="var(--team)" stroke="#fff" stroke-width="2"/>`;
+    if(r.m!=null) s2+=`<circle cx="${X(r.m)}" cy="${cy}" r="5.5" fill="var(--me)" stroke="#fff" stroke-width="2"/>`;
+    s2+=`<rect x="0" y="${cy-rh/2}" width="${W2}" height="${rh}" fill="transparent" data-j="${i}"/>`;
+  });
+  s2+='</svg>';
+  const c2=document.getElementById('c2'); c2.insertAdjacentHTML('beforeend',s2);
+  const tip2=c2.querySelector('.tip');
+  c2.querySelectorAll('rect[data-j]').forEach(r=>{
+    r.onmousemove=e=>{ const d=rows[+r.dataset.j];
+      tip2.innerHTML=`${esc(d.c)}<br>${esc(agent)}: ${d.m==null?'none':pct(d.m)+' of '+d.mn}<br>Rest of team: ${d.o==null?'–':pct(d.o)+' of '+d.on}`;
+      const bb=c2.getBoundingClientRect(); tip2.style.display='block'; tip2.style.left=Math.min(e.clientX-bb.left+12,bb.width-200)+'px'; tip2.style.top=(e.clientY-bb.top-10)+'px' };
+    r.onmouseleave=()=>tip2.style.display='none';
+  });
+}
+
+/* ---------- close-out sheet ---------- */
+function openSheet(id){
+  const t=T.find(x=>x.ticket_id===id); if(!t) return toast('No ticket '+id+' in this export');
+  const r=risk(t), pb=playFor(t), rec=myRecord(t), past = t.status==='Closed';
+  const name = t.client_name.split(' ')[0];
+  const follow = new Date(NOW.getTime()+2*DAY);
+  const msg = `Hi ${t.client_name} team,
+
+We've fixed the issue you reported on ${fmtD(t.created)} (${t.ticket_id}: "${t.description}").
+
+What we did: [one line on the fix]
+
+To make sure it holds, please check ${pb.next}. If anything looks off, just reply to this email and the ticket reopens with me directly. You won't have to explain it again.${r.level!=='lo'?`
+
+I'll check in with you on ${fmtD(follow)} as well.`:''}
+
+Thanks,
+${agent}, RideOps Support`;
+  const d=document.getElementById('drawer');
+  d.innerHTML = `
+    <div class="dh"><button class="x" aria-label="Close sheet" id="dx">×</button>
+      <h2>${esc(t.description)}</h2>
+      <div class="meta"><span><b>${t.ticket_id}</b></span><span>${esc(t.client_name)} (${esc(t.client_tier)})</span><span>${esc(t.priority)}</span><span>${esc(t.channel)}</span><span>opened ${fmtDT(t.created)}</span>${t.esc?'<span>came back from engineering</span>':''}</div>
+      ${past?`<p class="why" style="margin:8px 0 0">Past ticket, shown for practice. It ${t.reopens?`<b style="color:var(--hi)">was reopened ${t.reopens}×</b>`:'stayed closed'}.</p>`:''}
+    </div>
+    <div class="db">
+      <div class="risk ${r.level}"><h3>${r.label}</h3><ul>${r.reasons.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+        ${rec.n>=3?`<div class="mine">Your record on ${esc(t.category.toLowerCase())}: ${rec.r} of ${rec.n} came back (${pct(rec.r/rec.n)}). Rest of team: ${pct(rec.tn?rec.tr/rec.tn:0)}.</div>`:''}</div>
+      <div class="step"><h4><span class="n">1</span>Check before closing</h4>
+        <p class="hint">Tick each one you've done. These are the steps that stop this problem coming back.</p>
+        <div class="checks">${pb.checks.map((c,i)=>`<label><input type="checkbox" data-c="${i}"><span>${esc(c)}</span></label>`).join('')}</div></div>
+      <div class="step"><h4><span class="n">2</span>How do you know it's fixed?</h4>
+        <div class="checks" id="how">
+          <label><input type="radio" name="how" value="client"><span>The client confirmed it's working</span></label>
+          <label><input type="radio" name="how" value="self"><span>I checked it myself in the system</span></label>
+          <label><input type="radio" name="how" value="none"><span>Not confirmed yet</span></label></div></div>
+      <div class="step"><h4><span class="n">3</span>Send the close-out message</h4>
+        <p class="hint">Fill in the one line on what you did. The rest tells the client exactly what to check.</p>
+        <div class="msg"><textarea id="msg" aria-label="Close-out message">${esc(msg)}</textarea><button class="copy" id="copy">Copy message</button></div></div>
+      <div class="actions">
+        <button class="primary" id="closeBtn" disabled>Close ticket</button>
+        <button class="ghost" id="later">Not yet, keep it open</button>
+        <span class="why" id="why">Choose how you know it's fixed to close.</span>
+      </div>
+    </div>`;
+  d.classList.add('on'); d.setAttribute('aria-hidden','false'); document.getElementById('scrim').classList.add('on');
+  d.querySelector('#dx').focus();
+  d.querySelectorAll('.checks input[type=checkbox]').forEach(cb=>cb.onchange=()=>cb.closest('label').classList.toggle('done',cb.checked));
+  const btn=d.querySelector('#closeBtn'), why=d.querySelector('#why');
+  d.querySelectorAll('input[name=how]').forEach(rd=>rd.onchange=()=>{
+    d.querySelectorAll('#how label').forEach(l=>l.classList.toggle('done', l.querySelector('input').checked));
+    btn.disabled=false;
+    const left = pb.checks.length - d.querySelectorAll('.checks input[type=checkbox]:checked').length;
+    if(rd.value==='none'){ btn.textContent='Close and follow up in 2 days'; why.textContent='It goes on your follow-up list for '+fmtD(follow)+'.' }
+    else if(r.level==='hi'){ btn.textContent='Close and follow up in 2 days'; why.textContent='High-risk ticket, so a follow-up is added anyway.' }
+    else { btn.textContent='Close ticket'; why.textContent = left ? `${left} check${left>1?'s':''} not ticked.` : 'All checks done.' }
+  });
+  d.querySelector('#copy').onclick=()=>{ const v=d.querySelector('#msg').value; (navigator.clipboard?.writeText(v)||Promise.reject()).then(()=>toast('Message copied')).catch(()=>{ d.querySelector('#msg').select(); toast('Press Ctrl+C to copy') }) };
+  d.querySelector('#later').onclick=closeSheet;
+  btn.onclick=()=>{
+    const how=d.querySelector('input[name=how]:checked').value;
+    const ticked=d.querySelectorAll('.checks input[type=checkbox]:checked').length;
+    const follow_ = how==='none' || r.level==='hi';
+    LOG.push({id:t.ticket_id, agent, at:Date.now(), how, ticked, of:pb.checks.length, risk:r.level, follow:follow_, due:follow.getTime(), practice:past});
+    store.set('log',LOG); closeSheet();
+    toast(`Closed ${t.ticket_id}${follow_?'. Follow-up added for '+fmtD(follow):''}.`);
+    render();
+  };
+}
+function closeSheet(){ const d=document.getElementById('drawer'); d.classList.remove('on'); d.setAttribute('aria-hidden','true'); document.getElementById('scrim').classList.remove('on') }
+function toast(s){ const el=document.getElementById('toast'); el.textContent=s; el.style.display='block'; clearTimeout(toast.t); toast.t=setTimeout(()=>el.style.display='none',2800) }
+
+function bindRows(){
+  document.querySelectorAll('[data-open]').forEach(b=>b.onclick=e=>{ e.preventDefault(); openSheet(b.dataset.open) });
+  document.querySelectorAll('[data-check]').forEach(b=>b.onclick=()=>{ CHECKED[b.dataset.check]=Date.now(); store.set('checked',CHECKED); render() });
+  const go=document.getElementById('pgo'); if(go){ const f=()=>{ const v=document.getElementById('pid').value.trim().toUpperCase(); if(v) openSheet(/^SUP-/.test(v)?v:'SUP-'+v) }; go.onclick=f; document.getElementById('pid').onkeydown=e=>{ if(e.key==='Enter') f() } }
+}
+
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{ page=b.dataset.page; render() });
+document.getElementById('agent').onchange=e=>{ agent=e.target.value; render() };
+document.getElementById('scrim').onclick=closeSheet;
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeSheet() });
+
+fetch('tickets.csv').then(r=>{ if(!r.ok) throw 0; return r.text() }).then(load).catch(()=>{
+  document.getElementById('src').innerHTML='<label style="color:#fff;text-decoration:underline;cursor:pointer">Choose tickets.csv<input type="file" accept=".csv" id="file0" style="display:none"></label>';
+  document.getElementById('main').innerHTML='<div class="ph"><h1>Load the ticket export</h1><p>Your browser blocked reading tickets.csv directly. Choose the file from the left, or run a local server as the README describes.</p></div>';
+  document.getElementById('file0').onchange=e=>{ const f=e.target.files[0]; if(f) f.text().then(load) };
+});
+</script>
+</body>
+</html>
