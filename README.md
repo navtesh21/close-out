@@ -22,13 +22,13 @@ Nothing needs installing. It all runs in the browser and no data leaves your mac
 
 ## Using it
 
-Ready to close lists the agent's tickets that are with L1 right now, tagged high, medium or low reopen risk. Clicking one opens the close-out sheet. It shows why the ticket is risky and the checks for that symptom. You pick how you know it's fixed (client confirmed, checked it myself, or not yet), finish the one line about the fix in the draft reply, and close. High risk tickets, and anything closed without confirmation, get a follow-up 2 days later.
+My tickets is a board with three columns. Ready to close has the agent's tickets that are with L1 right now, tagged high, medium or low reopen risk. Follow up has medium and high risk tickets closed in the last 3 days, plus anything closed without confirmation. Closed here shows what was closed through the tool today.
 
-Follow-ups lists medium and high risk tickets closed in the last 3 days. Mark each one checked after you've messaged the client.
+Click a ticket in Ready to close to start closing it. It takes four steps: why it might come back, the checks for that problem, how you know it's fixed (client confirmed, checked it myself, or not yet), and a draft reply to the client. High risk tickets, and anything closed without confirmation, get a follow-up 2 days later. Mark a follow-up checked once you've messaged the client.
 
-My closes compares the agent's reopen rate with the rest of the team, by week and by problem type, and lists the tickets that came back.
+My record compares the agent's reopen rate with the rest of the team, by week and by problem type, and lists the tickets that came back.
 
-To try the sheet on an old ticket, type its ID (for example SUP-11319) in the box under the Ready to close list.
+To try the steps on an old ticket, type its ID (for example SUP-11319) in the box above the board.
 
 ## How the risk tag works
 
